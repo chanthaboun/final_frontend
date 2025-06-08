@@ -755,21 +755,9 @@ const ManagementEmployee = () => {
                         <TableCell style={{ width: tableHeaders[2].width }}>
                           {employee.tel || '-'}
                         </TableCell>
-                        {/* <TableCell style={{ width: tableHeaders[4].width }}>
-                          {employee.province || '-'}
-                        </TableCell> */}
-                        {/* <TableCell style={{ width: tableHeaders[5].width }}>
-                          {employee.district || '-'}
-                        </TableCell> */}
-                        {/* <TableCell style={{ width: tableHeaders[6].width }}>
-                          {employee.village || '-'}
-                        </TableCell> */}
                         <TableCell style={{ width: tableHeaders[3].width }}>
                           {employee.role || 'User'}
                         </TableCell>
-                        {/* <TableCell style={{ width: tableHeaders[4].width }}>
-                          <StatusChip status={employee.status || 'active'} />
-                        </TableCell> */}
                         <TableCell
                           align="center"
                           style={{ width: tableHeaders[4].width }}

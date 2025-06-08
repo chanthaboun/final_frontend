@@ -1,4 +1,3 @@
-
 // src/App.jsx
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
@@ -23,14 +22,28 @@ import Manage_product_Info from './pages/Manage_product_Info';
 import Manage_product_brand_Info from './pages/Manage_product_brand_Info';
 import Management_product_category from './pages/Management_product_category';
 import ManagementPurchase from './pages/ManagementPurchase';
-
-
-
 import WithdrawalRequest from './components/WithdrawalRequest';
+import EmployeeReport from './pages/Employee_report';
+
+
+// Import Cart Context
+import { CartProvider } from './context/CartContext';
+import { PurchaseProvider } from './context/PurchaseContext';
+
+// Import Cart Component (ຖ້າມີ)
+// import Cart from './components/Cart';
+import Cart from './pages/Cart';
+
+
+// Approde 
+import AdminRequestApproval from './components/AdminRequestApproval';
+import UserRequestStatus from './components/UserRequestStatus';
 import { authService } from './api';
 
 const App = () => {
-  return (
+	return (
+		<PurchaseProvider>
+		<CartProvider>
 			<Router>
 				<CssBaseline />
 				<Routes>
@@ -39,6 +52,18 @@ const App = () => {
 
 					{/* ເພີ່ມເສັ້ນທາງສຳລັບໜ້າລົງທະບຽນ */}
 					<Route path="/register" element={<Register />} />
+
+					{/* ເສັ້ນທາງສຳລັບໜ້າກະຕ່າ */}
+					<Route
+						path="/cart"
+						element={
+							<RequireAuth requiredRole="admin">
+								<AdminLayout>
+									<Cart />
+								</AdminLayout>
+							</RequireAuth>
+						}
+					/>
 
 					{/* ເສັ້ນທາງສຳລັບໜ້າຫຼັກ Admin Dashboard */}
 					<Route
@@ -109,18 +134,6 @@ const App = () => {
 						}
 					/>
 
-					{/* ເສັ້ນທາງສຳລັບການສັ່ງຊື້ (ສອດຄ່ອງກັບ NAVIGATION ໃນ AdminDashboard) */}
-					<Route
-						path="/orders"
-						element={
-							<RequireAuth requiredRole="admin">
-								<AdminLayout>
-									<Ordering />
-								</AdminLayout>
-							</RequireAuth>
-						}
-					/>
-
 					{/* ເສັ້ນທາງການຈັດການອື່ນໆ ຕາມທີ່ລະບຸໃນ REPORTS_SECTION */}
 					<Route
 						path="/management_product"
@@ -138,7 +151,7 @@ const App = () => {
 						element={
 							<RequireAuth requiredRole="admin">
 								<AdminLayout>
-									<Management_product_category/>
+									<Management_product_category />
 								</AdminLayout>
 							</RequireAuth>
 						}
@@ -148,17 +161,7 @@ const App = () => {
 						element={
 							<RequireAuth requiredRole="admin">
 								<AdminLayout>
-									<Manage_product_brand_Info/>
-								</AdminLayout>
-							</RequireAuth>
-						}
-					/>
-					<Route
-						path="/management_supplier"
-						element={
-							<RequireAuth requiredRole="admin">
-								<AdminLayout>
-									<div>ໜ້າຈັດການຂໍ້ມູນຜູ້ສະໜອງ - ຍັງຢູ່ໃນຂັ້ນຕອນການພັດທະນາ</div>
+									<Manage_product_brand_Info />
 								</AdminLayout>
 							</RequireAuth>
 						}
@@ -169,7 +172,7 @@ const App = () => {
 						element={
 							<RequireAuth requiredRole="admin">
 								<AdminLayout>
-									<ManagementPurchase/>
+									<ManagementPurchase />
 								</AdminLayout>
 							</RequireAuth>
 						}
@@ -181,7 +184,7 @@ const App = () => {
 						element={
 							<RequireAuth requiredRole="admin">
 								<AdminLayout>
-									<div>ລາຍງານພະນັກງານ - ຍັງຢູ່ໃນຂັ້ນຕອນການພັດທະນາ</div>
+									<EmployeeReport/>
 								</AdminLayout>
 							</RequireAuth>
 						}
@@ -292,37 +295,71 @@ const App = () => {
 
 					{/* ເສັ້ນທາງທີ່ບໍ່ມີ, ໃຫ້ກັບໄປໜ້າເລີ່ມຕົ້ນ */}
 					<Route path="*" element={<Navigate to="/" replace />} />
+						<Route
+							path="/admin/requests"
+							element={
+								<RequireAuth requiredRole="admin">
+									<AdminLayout>
+										<AdminRequestApproval />
+									</AdminLayout>
+								</RequireAuth>
+							}
+						/>
+
+
+						{/* ເສັ້ນທາງສຳລັບການສັ່ງຊື້ (ສອດຄ່ອງກັບ NAVIGATION ໃນ AdminDashboard) */}
+						<Route
+							path="/orders"
+							element={
+								<RequireAuth requiredRole="admin">
+									<AdminLayout>
+										<AdminRequestApproval/>
+									</AdminLayout>
+								</RequireAuth>
+							}
+						/>
+						<Route
+							path="/user/requests"
+							element={
+								<RequireAuth requiredRole="user">
+									<UserLayout>
+										<UserRequestStatus />
+									</UserLayout>
+								</RequireAuth>
+							}
+						/>
 				</Routes>
 			</Router>
-		);
+		</CartProvider>
+		</PurchaseProvider>
+	);
 };
 
 // ຄອມໂພເນັນສຳລັບກວດສອບການພິສູດຕົວຕົນ
 const RequireAuth = ({ children, requiredRole }) => {
-  const isAuthenticated = authService.isAuthenticated();
-  const userRole = authService.getUserRole();
+	const isAuthenticated = authService.isAuthenticated();
+	const userRole = authService.getUserRole();
 
-  if (!isAuthenticated) {
-    // ຖ້າບໍ່ໄດ້ເຂົ້າສູ່ລະບົບ, ກັບໄປໜ້າ login
-    return <Navigate to="/" replace />;
-  }
+	if (!isAuthenticated) {
+		// ຖ້າບໍ່ໄດ້ເຂົ້າສູ່ລະບົບ, ກັບໄປໜ້າ login
+		return <Navigate to="/" replace />;
+	}
 
-  if (requiredRole && userRole !== requiredRole) {
-    // ຖ້າຕ້ອງການບົດບາດສະເພາະແຕ່ຜູ້ໃຊ້ບໍ່ມີບົດບາດນັ້ນ
-    if (userRole === 'admin' && requiredRole === 'user') {
-      // ຖ້າແມ່ນ admin ແຕ່ພະຍາຍາມເຂົ້າໜ້າຂອງ user
-      return <Navigate to="/dashboard" replace />;
-    }
+	if (requiredRole && userRole !== requiredRole) {
+		// ຖ້າຕ້ອງການບົດບາດສະເພາະແຕ່ຜູ້ໃຊ້ບໍ່ມີບົດບາດນັ້ນ
+		if (userRole === 'admin' && requiredRole === 'user') {
+			// ຖ້າແມ່ນ admin ແຕ່ພະຍາຍາມເຂົ້າໜ້າຂອງ user
+			return <Navigate to="/dashboard" replace />;
+		}
 
-    if (userRole === 'user' && requiredRole === 'admin') {
-      // ຖ້າແມ່ນ user ແຕ່ພະຍາຍາມເຂົ້າໜ້າຂອງ admin
-      return <Navigate to="/user" replace />;
-    }
-  }
+		if (userRole === 'user' && requiredRole === 'admin') {
+			// ຖ້າແມ່ນ user ແຕ່ພະຍາຍາມເຂົ້າໜ້າຂອງ admin
+			return <Navigate to="/user" replace />;
+		}
+	}
 
-  // ຖ້າຜ່ານການກວດສອບທັງໝົດ, ສະແດງຄອມໂພເນັນທີ່ຕ້ອງການ
-  return children;
+	// ຖ້າຜ່ານການກວດສອບທັງໝົດ, ສະແດງຄອມໂພເນັນທີ່ຕ້ອງການ
+	return children;
 };
 
 export default App;
-
